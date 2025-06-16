@@ -1,0 +1,12 @@
+# .editorconfig for image-themer.rs
+root = true
+
+[*]
+indent_style = tab
+indent_size = 4
+insert_final_newline = true
+
+[*.yaml]
+trim_trailing_whitespace = true
+max_empty_lines = 0
+indent_style = space

@@ -1,24 +1,45 @@
 use imageproc::image::{self, RgbaImage, open};
 use rayon::prelude::*;
 use serde_yml::from_str;
-use std::{collections::HashMap, fs::read_to_string, time::Instant};
+use std::{
+    collections::HashMap,
+    fs::read_to_string,
+    io::{Write, stdin, stdout},
+};
 
 fn main() {
-    let start = Instant::now();
-
     // get the image
     let mut image: RgbaImage = load_image("image.png");
     // get the color schemes
     let color_schemes: ColorSchemes = ColorSchemes::new("./src/schemes.yaml");
-    let scheme_to_use: Vec<(u8, u8, u8)> = color_schemes.get_scheme("gruvbox");
+    println!("Choose your color scheme by entering its corrosponding number: ");
+    for (i, scheme) in color_schemes.list_schemes().iter().enumerate() {
+        println!("{}: {}", i + 1, scheme);
+    }
+
+    let mut line = String::new();
+    print!("Color Scheme number: ");
+    stdout().flush().unwrap();
+    match stdin().read_line(&mut line) {
+        Ok(_) => {}
+        Err(e) => println!("{}", e),
+    }
+    let scheme_index: u16 = line
+        .trim()
+        .parse::<u16>()
+        .expect("Please enter a valid number")
+        - 1;
+
+    let selected_scheme_name: String = color_schemes.list_schemes()[scheme_index as usize].clone();
+
+    println!("Using scheme: {}", selected_scheme_name);
+
+    let scheme_to_use: Vec<(u8, u8, u8)> = color_schemes.get_scheme(&selected_scheme_name);
 
     recolour_image(&mut image, scheme_to_use);
 
     // save the image again
     image.save("output.png").expect("Failed to save image");
-
-    let duration = start.elapsed();
-    println!("main function took: {:?}", duration);
 }
 
 // function to read the image which the path specified leads to
@@ -85,5 +106,11 @@ impl ColorSchemes {
                 (r, g, b)
             })
             .collect()
+    }
+
+    fn list_schemes(&self) -> Vec<String> {
+        let mut schemes: Vec<String> = self.schemes.keys().cloned().collect();
+        schemes.sort();
+        schemes
     }
 }

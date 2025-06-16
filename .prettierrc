@@ -1,0 +1,19 @@
+{
+	"useTabs": true,
+	"tabWidth": 4,
+	"proseWrap": "never",
+	"insertPragma": false,
+	"requirePragma": false,
+	"singleQuote": true,
+	"overrides": [
+		{
+			"files": "*.yaml",
+			"options": {
+				"parser": "yaml",
+				"proseWrap": "never",
+				"yamlBracketSpacing": false,
+				"useTabs": false
+			}
+		}
+	]
+}
