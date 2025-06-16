@@ -1,4 +1,7 @@
-use imageproc::image::{self, RgbaImage, open};
+use imageproc::{
+    filter::gaussian_blur_f32,
+    image::{self, RgbaImage, open},
+};
 use rayon::prelude::*;
 use serde_yml::from_str;
 use std::{
@@ -8,8 +11,9 @@ use std::{
 };
 
 fn main() {
+    let image_path: &str = "image.png";
     // get the image
-    let mut image: RgbaImage = load_image("image.png");
+    let mut image: RgbaImage = load_image(&image_path);
     // get the color schemes
     let color_schemes: ColorSchemes = ColorSchemes::new("./src/schemes.yaml");
     println!("Choose your color scheme by entering its corrosponding number: ");
@@ -39,12 +43,27 @@ fn main() {
     recolour_image(&mut image, scheme_to_use);
 
     // save the image again
-    image.save("output.png").expect("Failed to save image");
+    let output_path = match image_path.rfind('.') {
+        Some(idx) => &image_path[..idx],
+        None => image_path,
+    };
+    image
+        .save(format!(
+            "{}-{}.{}",
+            output_path,
+            selected_scheme_name,
+            image_path.split('.').last().unwrap()
+        ))
+        .expect("Failed to save image");
 }
 
 // function to read the image which the path specified leads to
 fn load_image(path: &str) -> RgbaImage {
     open(path).expect("Failed to open image").into_rgba8()
+}
+
+fn denoise_image(image: &mut RgbaImage) -> RgbaImage {
+    gaussian_blur_f32(image, 3.0)
 }
 
 fn recolour_image(image: &mut RgbaImage, color_scheme: Vec<(u8, u8, u8)>) -> RgbaImage {
