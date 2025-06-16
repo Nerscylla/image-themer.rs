@@ -1,5 +1,5 @@
 use imageproc::{
-    filter::gaussian_blur_f32,
+    filter::median_filter,
     image::{self, RgbaImage, open},
 };
 use rayon::prelude::*;
@@ -55,6 +55,17 @@ fn main() {
             image_path.split('.').last().unwrap()
         ))
         .expect("Failed to save image");
+
+    image = denoise_image(&mut image);
+
+    image
+        .save(format!(
+            "{}-{}-denoised.{}",
+            output_path,
+            selected_scheme_name,
+            image_path.split('.').last().unwrap()
+        ))
+        .expect("Failed to save image");
 }
 
 // function to read the image which the path specified leads to
@@ -63,7 +74,7 @@ fn load_image(path: &str) -> RgbaImage {
 }
 
 fn denoise_image(image: &mut RgbaImage) -> RgbaImage {
-    gaussian_blur_f32(image, 3.0)
+    median_filter(image, 3, 3)
 }
 
 fn recolour_image(image: &mut RgbaImage, color_scheme: Vec<(u8, u8, u8)>) -> RgbaImage {
